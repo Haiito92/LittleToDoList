@@ -24,6 +24,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
@@ -39,18 +41,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
+            val tasks by viewModel.tasks.collectAsState()
+
             LittleToDoListTheme {
-
-
-                ToDoView(viewModel.tasks)
+                ToDoView(tasks)
             }
         }
     }
 }
 
 @Composable
-fun ToDoView(tasks: List<String>) {
+fun ToDoView(tasks: List<Task>) {
     Scaffold() { innerPadding ->
         Column(modifier = Modifier
             .padding(innerPadding)
@@ -106,12 +109,12 @@ fun NewTaskRow(){
 }
 
 @Composable
-fun TasksColumn(texts: List<String>){
+fun TasksColumn(tasks: List<Task>){
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
     ) {
-        items(texts){ text ->
-            TaskRow(text)
+        items(tasks){ task ->
+            TaskRow(task.title)
         }
     }
 }
@@ -145,6 +148,6 @@ fun TaskRow(text: String){
 @Composable
 fun ToDoPreview() {
     LittleToDoListTheme {
-        ToDoView(listOf("Workout", "Send mail"))
+        ToDoView(listOf(Task("Workout"), Task("Send mail")))
     }
 }
