@@ -8,14 +8,13 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
@@ -23,7 +22,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -51,14 +49,17 @@ class MainActivity : ComponentActivity() {
             val tasks by viewModel.tasks.collectAsState()
 
             LittleToDoListTheme {
-                ToDoView(tasks)
+                ToDoView(tasks,
+                    viewModel::addTask,
+                    viewModel::toggleTask,
+                    viewModel::deleteTask)
             }
         }
     }
 }
 
 @Composable
-fun ToDoView(tasks: List<Task>) {
+fun ToDoView(tasks: List<Task>, onAddTask: (String) -> Unit, onToggleTask: (Task, Boolean) -> Unit, onDeleteTask: (Task) -> Unit) {
     Scaffold() { innerPadding ->
         Column(modifier = Modifier
             .padding(innerPadding)
@@ -66,8 +67,8 @@ fun ToDoView(tasks: List<Task>) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             TitleRow()
-            NewTaskRow()
-            TasksColumn(tasks)
+            NewTaskRow(onAddTask)
+            TasksColumn(tasks, onToggleTask, onDeleteTask)
         }
     }
 }
@@ -88,18 +89,21 @@ fun TitleRow(){
 }
 
 @Composable
-fun NewTaskRow(){
+fun NewTaskRow(onAddTask: (String) -> Unit){
+    val state = rememberTextFieldState()
+
     Row(modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        OutlinedTextField(state = TextFieldState(""),
+        OutlinedTextField(state = state,
             placeholder = {Text("New Task...")},
             shape = RoundedCornerShape(32.dp),
             modifier = Modifier
                 .weight(3.0f, true))
 
-        Button({},
+        Button({ onAddTask.invoke(state.text.toString()) },
+            enabled = state.text.isNotBlank(),
             modifier = Modifier
                 .weight(1.0f, true)
         ) {
@@ -109,23 +113,23 @@ fun NewTaskRow(){
 }
 
 @Composable
-fun TasksColumn(tasks: List<Task>){
+fun TasksColumn(tasks: List<Task>, onToggleTask: (Task, Boolean) -> Unit, onDeleteTask: (Task) -> Unit){
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
     ) {
         items(tasks){ task ->
-            TaskRow(task)
+            TaskRow(task, onToggleTask, onDeleteTask)
         }
     }
 }
 
 @Composable
-fun TaskRow(task: Task){
+fun TaskRow(task: Task, onToggleTask: (Task, Boolean) -> Unit, onDeleteTask: (Task) -> Unit){
     Row(modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(task.completed, { },
+        Checkbox(task.completed, { checked -> onToggleTask.invoke(task, checked) },
             Modifier.weight(1.0f))
 
         Text(task.title, modifier = Modifier
@@ -135,7 +139,7 @@ fun TaskRow(task: Task){
             textAlign = TextAlign.Left,
             textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None)
 
-        IconButton({},
+        IconButton({ onDeleteTask.invoke(task) },
             modifier = Modifier.weight(1.0f)) {
             Icon(
                 imageVector = Icons.Default.Delete,
@@ -149,6 +153,10 @@ fun TaskRow(task: Task){
 @Composable
 fun ToDoPreview() {
     LittleToDoListTheme {
-        ToDoView(listOf(Task("Workout", true), Task("Send mail", false)))
+        ToDoView(
+            listOf(Task(1, "Workout", true)),
+            {},
+            { task: Task, bool: Boolean -> },
+            {})
     }
 }
