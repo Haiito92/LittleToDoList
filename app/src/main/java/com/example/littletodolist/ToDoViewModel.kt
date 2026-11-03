@@ -10,6 +10,6 @@ class ToDoViewModel : ViewModel() {
     val tasks: StateFlow<List<Task>> = _tasks
 
     fun addTask(title: String){
-        _tasks.update { _tasks.value + Task(title) }
+        _tasks.update { currentValue -> currentValue + Task(title) }
     }
 }

@@ -8,11 +8,14 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
@@ -21,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.littletodolist.ui.theme.LittleToDoListTheme
@@ -88,16 +93,11 @@ fun NewTaskRow(){
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        OutlinedButton({},
+        OutlinedTextField(state = TextFieldState(""),
+            placeholder = {Text("New Task...")},
+            shape = RoundedCornerShape(32.dp),
             modifier = Modifier
-                .weight(3.0f, true)
-        ) {
-            Text("New task...",
-                modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Left
-            )
-        }
+                .weight(3.0f, true))
 
         Button({},
             modifier = Modifier
@@ -114,25 +114,26 @@ fun TasksColumn(tasks: List<Task>){
         modifier = Modifier.fillMaxSize(),
     ) {
         items(tasks){ task ->
-            TaskRow(task.title)
+            TaskRow(task)
         }
     }
 }
 
 @Composable
-fun TaskRow(text: String){
+fun TaskRow(task: Task){
     Row(modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(true, {},
+        Checkbox(task.completed, { },
             Modifier.weight(1.0f))
 
-        Text(text, modifier = Modifier
+        Text(task.title, modifier = Modifier
             .fillMaxWidth()
             .weight(4.0f),
             style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Left)
+            textAlign = TextAlign.Left,
+            textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None)
 
         IconButton({},
             modifier = Modifier.weight(1.0f)) {
@@ -148,6 +149,6 @@ fun TaskRow(text: String){
 @Composable
 fun ToDoPreview() {
     LittleToDoListTheme {
-        ToDoView(listOf(Task("Workout"), Task("Send mail")))
+        ToDoView(listOf(Task("Workout", true), Task("Send mail", false)))
     }
 }
